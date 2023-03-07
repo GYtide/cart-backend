@@ -15,8 +15,9 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
+from dsrt import urls as dsrt_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    # path('overview/',include('dsrt.urls'))
+    path('overview/',include(dsrt_urls))
 ]
