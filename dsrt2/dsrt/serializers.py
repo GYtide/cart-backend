@@ -7,3 +7,9 @@ class ProjectDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectData
         fields = ['file_name','date']
+
+# 对投影文件的序列化，为了得到文件信息
+class ProjectFileSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectData
+        fields = ['file_name','file_path','date']
