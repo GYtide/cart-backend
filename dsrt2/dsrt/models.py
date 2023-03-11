@@ -143,7 +143,7 @@ class ProjectData(models.Model):
         db_table = 'project_data'
 
 
-class c(models.Model):
+class SpecView(models.Model):
     file_name = models.CharField(max_length=255, blank=True, null=True)
     file_path = models.CharField(max_length=255, blank=True, null=True)
     date = models.DateField(blank=True, null=True)
