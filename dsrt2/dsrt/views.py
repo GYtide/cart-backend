@@ -4,7 +4,7 @@ from rest_framework import views
 from rest_framework.response import Response
 from rest_framework import status
 from . import models
-from .serializers import ProjectDataSerializer ,ProjectFileSerializer
+from .serializers import ProjectDataSerializer ,ProjectFileSerializer ,ImageFileSerializer
 from astropy.io import fits
 import os
 import io
@@ -73,6 +73,7 @@ class ImageProjectedView(views.APIView):
             hdu = fits.open(path)
             data = hdu[0].data #float32
             timearr = hdu[1].data['TIME'] #int32
+            hdu.close()
             pixelarr = np.arange(0,data.shape[0],1)
             buffer = io.BytesIO()
 
@@ -83,5 +84,32 @@ class ImageProjectedView(views.APIView):
         except:
             return Response([],status=status.HTTP_404_NOT_FOUND)
 
+class ImageFileView(views.APIView):
 
-    
+    def get(self,requset):
+
+        try:
+            name = 'ODACH_DSRT02_SRIM_L2_150.9MHz_202303010955.fits'
+            # queryset = models.ImageData.objects.filter(file_name__exact=name)
+            # serializer = ImageFileSerializer(queryset,many=True)
+            # filename = serializer.data[0]['file_name']
+            # path = serializer.data[0]['file_path']
+            # path = os.path.join(path,filename)
+
+            path = r'/home/gytide/dsrtprod/data/2023/03/image_data/ODACH_DSRT02_SRIM_L2_150.9MHz_202303010955.fits'
+            
+            # 打开文件并传回hdu文件头信息和第一帧
+
+            hdu = fits.open(path)
+
+            print(hdu)
+            header =  hdu[0].header
+
+            data = hdu[1].data['STOKESI'][0]
+            return Response([{'width':128 ,'height':128 ,'header':header,'data':data.flatten()}],status=status.HTTP_200_OK)
+        
+        except:
+            return Response([],status=status.HTTP_404_NOT_FOUND)
+
+
+

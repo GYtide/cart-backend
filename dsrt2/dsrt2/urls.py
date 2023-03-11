@@ -19,5 +19,6 @@ from dsrt import urls as dsrt_urls
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('overview/',include(dsrt_urls))
+    path('overview/',include(dsrt_urls)),
+    path('data/',include(dsrt_urls))
 ]
