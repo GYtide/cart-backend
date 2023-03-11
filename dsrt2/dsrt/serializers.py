@@ -1,12 +1,18 @@
 from rest_framework import serializers
 
-from .models import ProjectData ,ImageData
+from .models import ProjectData ,ImageData ,SpecView
 
 # 对投影文件的序列化，为了得到有数据的日期
 class ProjectDataSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectData
         fields = ['file_name','date']
+
+# 对频谱文件的序列化, 得到文件路径
+class SpecViewFileSerialzer(serializers.ModelSerializer):
+    class Meta:
+        model = SpecView
+        fields = ['file_name','file_path','date']
 
 # 对投影文件的序列化，为了得到文件信息
 class ProjectFileSerializer(serializers.ModelSerializer):
