@@ -58,9 +58,10 @@ class ImageProjectedView(views.APIView):
         except:
             return Response([],status=status.HTTP_404_NOT_FOUND)
 
+# 路由 /data/image   ?type= openfile || appdata 
 class ImageFileView(views.APIView):
 
-    def get(self,requset):
+    def get(self,request):
 
         try:
             name = 'ODACH_DSRT02_SRIM_L2_150.9MHz_202303010955.fits'
@@ -70,17 +71,25 @@ class ImageFileView(views.APIView):
             # path = serializer.data[0]['file_path']
             # path = os.path.join(path,filename)
 
-            path = r'/home/gytide/dsrtprod/data/2023/03/image_data/ODACH_DSRT02_SRIM_L2_150.9MHz_202303010955.fits'
+            path = r'/home/gytide/dsrtprod/data/2023/03/dsrtimg/ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits'
             
-            # 打开文件并传回hdu文件头信息和第一帧
+            # 判断request中的 type 属性,如果打开文件并传回hdu文件头信息和第一帧
+            type = request.GET.get('type')
 
-            hdu = fits.open(path)
+            if type == 'openfile':
 
-            print(hdu)
-            header =  hdu[0].header
+                # 打开文件并返回文件头信息
 
-            data = hdu[1].data['STOKESI'][0]
-            return Response([{'width':128 ,'height':128 ,'header':header,'data':data.flatten()}],status=status.HTTP_200_OK)
+                hdu = fits.open(path)
+
+                # 传回文件头和 STOKESI 的第一帧
+
+                header0 = hdu[0].header
+                header1 = hdu[1].header
+
+                return Response([{'header0':header0,'header1':header1}],status=status.HTTP_200_OK)
+            else:
+                return Response([{'asdasd'}],status=status.HTTP_200_OK)
         
         except:
             return Response([],status=status.HTTP_404_NOT_FOUND)
