@@ -97,13 +97,13 @@ class ImageFileView(views.APIView):
 
 # 路由 /data/filelist ?type= image || spec & start= & end=
 # 获取时间段内的成像数据文件的列表
-class ImageFileList(views):
+class ImageFileList(views.APIView):
 
     def get(self,request):
 
         try:
-
-            return Response([{'header0':header0,'header1':header1}],status=status.HTTP_200_OK)
+            
+            return Response([{'name':'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits','path':'/home/gytide/dsrtprod/data/2023/03/dsrtimg/ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits','freq':233.0}],status=status.HTTP_200_OK)
         except:
             return Response([{'asdasd'}],status=status.HTTP_200_OK)
 
