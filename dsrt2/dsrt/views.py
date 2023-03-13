@@ -96,8 +96,16 @@ class ImageFileView(views.APIView):
 
 
 # 路由 /data/filelist ?type= image || spec & start= & end=
+# 获取时间段内的成像数据文件的列表
+class ImageFileList(views):
 
-# class ImageFileList(views):
+    def get(self,request):
+
+        try:
+
+            return Response([{'header0':header0,'header1':header1}],status=status.HTTP_200_OK)
+        except:
+            return Response([{'asdasd'}],status=status.HTTP_200_OK)
 
 
 
