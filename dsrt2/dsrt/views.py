@@ -58,7 +58,7 @@ class ImageProjectedView(views.APIView):
         except:
             return Response([],status=status.HTTP_404_NOT_FOUND)
 
-# 路由 /data/image   ?type= openfile || appdata 
+# 路由 /data/imagefile   ?type= openfile || appdata 
 class ImageFileView(views.APIView):
 
     def get(self,request):
@@ -93,6 +93,12 @@ class ImageFileView(views.APIView):
         
         except:
             return Response([],status=status.HTTP_404_NOT_FOUND)
+
+
+# 路由 /data/filelist ?type= image || spec & start= & end=
+
+# class ImageFileList(views):
+
 
 
 class OverView(views.APIView):
