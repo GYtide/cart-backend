@@ -103,7 +103,11 @@ class ImageFileList(views.APIView):
 
         try:
             
-            return Response([{'name':'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits','path':'/home/gytide/dsrtprod/data/2023/03/dsrtimg/ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits','freq':233.0}],status=status.HTTP_200_OK)
+            return Response([{'name':'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits',
+                              'path':'/home/gytide/dsrtprod/data/2023/03/dsrtimg/ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits',
+                              'freq':233.0,
+                              'time_beg':'2022-04-17 03:26:00',
+                              'time_end':'2022-04-17 03:39:59'}],status=status.HTTP_200_OK)
         except:
             return Response([{'asdasd'}],status=status.HTTP_200_OK)
 
