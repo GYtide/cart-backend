@@ -58,7 +58,7 @@ class ImageProjectedView(views.APIView):
         except:
             return Response([],status=status.HTTP_404_NOT_FOUND)
 
-# 路由 /data/imagefile   ?type= openfile || appdata &fname= filename
+# 路由 /data/imagefile   ?type= openfile || appdata &fname= filename & index = 
 class ImageFileView(views.APIView):
 
     def get(self,request):
@@ -74,9 +74,10 @@ class ImageFileView(views.APIView):
             path = r'/home/gytide/dsrtprod/data/2023/03/dsrtimg/ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits'
             
             # 判断request中的 type 属性,如果打开文件并传回hdu文件头信息和第一帧
-            type = request.GET.get('type')
+            reqtype = request.GET.get('type')
+            print('reqtype',reqtype)
 
-            if type == 'openfile':
+            if reqtype == 'openfile':
 
                 # 打开文件并返回文件头信息
 
@@ -95,8 +96,20 @@ class ImageFileView(views.APIView):
                 hdu.close()
 
                 return Response([{'header0':header0,'header1':header1},{'frame':frame,'index':1}],status=status.HTTP_200_OK)
+            elif reqtype == 'appdata':
+                    index = int(request.GET.get('index'))
+                    hdu = fits.open(path)
+                    # print('index',hdu[1].data[index])
+                    data = hdu[1].data[index]
+
+                    frame = {'time':data[0],'freq':data[1],
+                         'stokesi':data[2],'stokesv':data[3],'sunx':data[4],'suny':data[5]}
+
+                    hdu.close()
+                    return Response([{'frame':frame,'index':index}],status=status.HTTP_200_OK)
+            
             else:
-                return Response([{'asdasd'}],status=status.HTTP_200_OK)
+                return Response([{'NOTDATA'}],status=status.HTTP_404_NOT_FOUND)
         
         except:
             return Response([],status=status.HTTP_404_NOT_FOUND)
