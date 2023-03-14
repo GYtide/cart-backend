@@ -82,7 +82,11 @@ class ImageFileView(views.APIView):
 
                 hdu = fits.open(path)
                 
-                frame = hdu[1].data['stokesi'][0]
+                data = hdu[1].data[0]
+
+                frame = {'time':data[0],'freq':data[1],
+                         'stokesi':data[2],'stokesv':data[3],'sunx':data[4],'suny':data[5]}
+
                 # 传回文件头和 STOKESI 的第一帧
 
                 header0 = hdu[0].header
@@ -90,7 +94,7 @@ class ImageFileView(views.APIView):
 
                 hdu.close()
 
-                return Response([{'header0':header0,'header1':header1},{'stokes':'stokesi','frame':frame,'index':1}],status=status.HTTP_200_OK)
+                return Response([{'header0':header0,'header1':header1},{'frame':frame,'index':1}],status=status.HTTP_200_OK)
             else:
                 return Response([{'asdasd'}],status=status.HTTP_200_OK)
         
