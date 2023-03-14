@@ -58,7 +58,7 @@ class ImageProjectedView(views.APIView):
         except:
             return Response([],status=status.HTTP_404_NOT_FOUND)
 
-# 路由 /data/imagefile   ?type= openfile || appdata 
+# 路由 /data/imagefile   ?type= openfile || appdata &fname= filename
 class ImageFileView(views.APIView):
 
     def get(self,request):
@@ -81,13 +81,16 @@ class ImageFileView(views.APIView):
                 # 打开文件并返回文件头信息
 
                 hdu = fits.open(path)
-
+                
+                frame = hdu[1].data['stokesi'][0]
                 # 传回文件头和 STOKESI 的第一帧
 
                 header0 = hdu[0].header
                 header1 = hdu[1].header
 
-                return Response([{'header0':header0,'header1':header1}],status=status.HTTP_200_OK)
+                hdu.close()
+
+                return Response([{'header0':header0,'header1':header1},{'stokes':'stokesi','frame':frame,'index':1}],status=status.HTTP_200_OK)
             else:
                 return Response([{'asdasd'}],status=status.HTTP_200_OK)
         
