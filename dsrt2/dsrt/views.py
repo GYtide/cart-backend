@@ -58,7 +58,7 @@ class ImageProjectedView(views.APIView):
         except:
             return Response([],status=status.HTTP_404_NOT_FOUND)
 
-# 路由 /data/imagefile   ?type= openfile || appdata &fname= filename & index = 
+# /data/imagefile   ?type= openfile || appdata &fname= filename & index = 
 class ImageFileView(views.APIView):
 
     def get(self,request):
@@ -114,8 +114,11 @@ class ImageFileView(views.APIView):
         except:
             return Response([],status=status.HTTP_404_NOT_FOUND)
 
+# /data/specfile ?start= 开始时间  & end= 结束时间
 
-# 路由 /data/filelist ?type= image || spec & start= & end=
+# class Spec
+
+# /data/filelist ?type= image || spec & start= & end=
 # 获取时间段内的成像数据文件的列表
 class ImageFileList(views.APIView):
 
@@ -130,6 +133,7 @@ class ImageFileList(views.APIView):
                               'time_end':'2022-04-17 03:39:59'}],status=status.HTTP_200_OK)
         except:
             return Response([{'asdasd'}],status=status.HTTP_200_OK)
+
 
 
 

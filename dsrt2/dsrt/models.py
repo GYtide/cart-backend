@@ -127,6 +127,7 @@ class ImageData(models.Model):
     file_path = models.CharField(max_length=255, blank=True, null=True)
     time_begin = models.DateTimeField(blank=True, null=True)
     time_end = models.DateTimeField(blank=True, null=True)
+    freq = models.FloatField(blank=True, null=True)
 
     class Meta:
         managed = False
@@ -137,10 +138,22 @@ class ProjectData(models.Model):
     file_name = models.CharField(max_length=255, blank=True, null=True)
     file_path = models.CharField(max_length=255, blank=True, null=True)
     date = models.DateField(blank=True, null=True)
+    direct = models.CharField(max_length=2, blank=True, null=True)
 
     class Meta:
         managed = False
         db_table = 'project_data'
+
+
+class SpecData(models.Model):
+    file_name = models.CharField(max_length=255, blank=True, null=True)
+    file_path = models.CharField(max_length=255, blank=True, null=True)
+    time_begin = models.DateTimeField(blank=True, null=True)
+    time_end = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'spec_data'
 
 
 class SpecView(models.Model):
