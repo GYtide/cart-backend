@@ -4,7 +4,7 @@ from rest_framework import views
 from rest_framework.response import Response
 from rest_framework import status
 from . import models
-from .serializers import ProjectDataSerializer,SpecViewFileSerialzer,ProjectFileSerializer ,ImageFileSerializer
+from .serializers import ProjectDataSerializer,SpecViewFileSerialzer,ProjectFileSerializer ,ImageFileSerializer,SpecDataSerializer
 from astropy.io import fits
 import os
 import io
@@ -12,6 +12,7 @@ import numpy as np
 from pathlib import Path
 import json
 import base64
+
 # Create your views here.
 
 # 根据年份获取有数据的日期
@@ -115,8 +116,43 @@ class ImageFileView(views.APIView):
             return Response([],status=status.HTTP_404_NOT_FOUND)
 
 # /data/specfile ?start= 开始时间  & end= 结束时间
+class SpecFileView(views.APIView):
+    def get(self,request):
+        try:
+            # ODACH_CART05_SRSP_L1_STP_20220417000505_V01.01.fits
+            
+            hdu1 = fits.open('/home/gytide/dsrtprod/data/2023/03/dsrtspe/ODACH_CART05_SRSP_L1_STP_20220417000505_V01.01.fits')
+            hdu2 = fits.open('/home/gytide/dsrtprod/data/2023/03/dsrtspe/ODACH_CART05_SRSP_L1_STP_20220417000505_V01.01.fits')
+            hdu3 = fits.open('/home/gytide/dsrtprod/data/2023/03/dsrtspe/ODACH_CART05_SRSP_L1_STP_20220417000505_V01.01.fits')
+            hdu4 = fits.open('/home/gytide/dsrtprod/data/2023/03/dsrtspe/ODACH_CART05_SRSP_L1_STP_20220417000505_V01.01.fits')
+            hdu5 = fits.open('/home/gytide/dsrtprod/data/2023/03/dsrtspe/ODACH_CART05_SRSP_L1_STP_20220417000505_V01.01.fits')
 
-# class Spec
+            fitslist = [hdu1]
+
+            '''将待处理文件的数据导入新的数组'''
+
+            # 导入时间矩阵和频点矩阵
+            # 频点矩阵
+            freArray = fitslist[0][1].data['frequency'][0]
+            freArray = list(map(lambda x: round(x, 2), freArray))
+            # 时间矩阵
+
+            otimeArray = fitslist[0][1].data['TIME']
+
+            for i in range(1, len(fitslist)):
+                otimeArray = np.hstack((otimeArray, fitslist[i][1].data['TIME']))
+
+            # # 数据矩阵
+
+            odataArray = fitslist[0][0].data
+
+            # for i in range(1, len(fitslist)):
+            #     odataArray = np.concatenate((odataArray, fitslist[i][0].data), axis=2)
+
+            return Response({'frearr':freArray,'time':otimeArray,'data':odataArray},status=status.HTTP_200_OK)
+        except:
+
+            return Response(['SpecFileViewNotFound'],status=status.HTTP_404_NOT_FOUND)
 
 # /data/filelist ?type= image || spec & start= & end=
 # 获取时间段内的成像数据文件的列表
@@ -133,8 +169,6 @@ class ImageFileList(views.APIView):
                               'time_end':'2022-04-17 03:39:59'}],status=status.HTTP_200_OK)
         except:
             return Response([{'asdasd'}],status=status.HTTP_200_OK)
-
-
 
 
 class OverView(views.APIView):
