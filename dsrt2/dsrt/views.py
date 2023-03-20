@@ -4,7 +4,7 @@ from rest_framework import views
 from rest_framework.response import Response
 from rest_framework import status
 from . import models
-from .serializers import ProjectDataSerializer,SpecViewFileSerialzer,ProjectFileSerializer ,ImageFileSerializer,SpecDataSerializer
+from .serializers import ProjectDataSerializer,SpecViewFileSerialzer,ProjectFileSerializer ,ImageFileSerializer,SpecDataSerializer,SpecDataListSerializer
 from astropy.io import fits
 import os
 import io
@@ -12,6 +12,8 @@ import numpy as np
 from pathlib import Path
 import json
 import base64
+from django.db.models import Q
+import datetime
 
 # Create your views here.
 
@@ -154,7 +156,7 @@ class SpecFileView(views.APIView):
 
             return Response(['SpecFileViewNotFound'],status=status.HTTP_404_NOT_FOUND)
 
-# /data/filelist ?type= image || spec & start= & end=
+# /data/imgfilelist ?type= image || spec & start= & end=
 # 获取时间段内的成像数据文件的列表
 class ImageFileList(views.APIView):
 
@@ -170,6 +172,24 @@ class ImageFileList(views.APIView):
         except:
             return Response([{'asdasd'}],status=status.HTTP_200_OK)
 
+# /data/spefilelist
+
+class SpeFileList(views.APIView):
+
+    def get(self,request):
+        try:
+            start = request.GET.get('start')  
+            end = request.GET.get('end')
+
+            # 查询开始时间、结束时间有一项在时间范围内即可。并按时间排序
+            queryset = models.SpecData.objects.filter(
+                Q(time_begin__lte=start, time_end__gte=start) | 
+                Q(time_begin__lte=end, time_end__gte=end) | 
+                Q(time_begin__gte=start, time_end__lte=end)).order_by('time_begin')
+            serializer = SpecDataListSerializer(queryset,many=True)
+            return Response({'list':serializer.data},status=status.HTTP_200_OK)
+        except:
+            return Response({'asdasd'},status=status.HTTP_404_NOT_FOUND)
 
 class OverView(views.APIView):
     def get(self,request):
@@ -197,3 +217,10 @@ class OverView(views.APIView):
         
         except:
             return Response([],status=status.HTTP_404_NOT_FOUND)
+        
+
+
+
+
+
+

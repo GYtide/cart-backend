@@ -32,3 +32,9 @@ class SpecDataSerializer(serializers.ModelSerializer):
      class Meta:
         model = SpecData
         fields = ['file_name','file_path','time_begin','time_end']
+
+
+class SpecDataListSerializer(serializers.ModelSerializer):
+     class Meta:
+        model = SpecData
+        fields = ['file_name','time_begin','time_end']
