@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import FileResponse
+from django.http import FileResponse,HttpResponse
 from rest_framework import views
 from rest_framework.response import Response
 from rest_framework import status
@@ -14,6 +14,7 @@ import json
 import base64
 from django.db.models import Q
 import datetime
+import zipfile
 
 # Create your views here.
 
@@ -218,6 +219,40 @@ class OverView(views.APIView):
         except:
             return Response([],status=status.HTTP_404_NOT_FOUND)
         
+
+
+# /data/download 根据文件列表下载文件
+
+class DownLoadFile(views.APIView):
+
+    def post(self,request):
+        try:
+            file_list = request.data['filelist']
+            query = Q(file_name__in=file_list)
+            # 查出路径
+            queryset = models.SpecData.objects.filter(query)
+            serializer = SpecDataSerializer(queryset,many=True)
+            
+            # 将 serializer.data 转换为 JSON 格式的字符串
+            data_list = list(serializer.data)
+            filepaths = [d['file_path'] for d in data_list]
+
+            # 将要下载的文件打包成 ZIP 文件
+            zip_filename = 'download.zip'
+            with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                for filepath in filepaths:
+                    zip_file.write(filepath)
+
+           # 将 ZIP 文件作为响应发送给客户端浏览器进行下载
+            response = FileResponse(open(zip_filename, "rb"))
+            response['Content-Type'] = 'application/octet-stream'
+            response['Content-Disposition'] = 'attachment; filename="{}"'.format(zip_filename)
+            print(response)
+            return response
+            # return Response({'asda':filepaths},status=status.HTTP_200_OK)
+        except:
+            return Response({'not found'},status=status.HTTP_404_NOT_FOUND)
+
 
 
 

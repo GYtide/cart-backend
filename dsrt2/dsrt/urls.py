@@ -1,5 +1,5 @@
 from django.urls import path, re_path, include
-from .views import GetYearList ,ImageProjectedView,ImageFileView,OverView,ImageFileList,SpecFileView,SpeFileList
+from .views import GetYearList ,ImageProjectedView,ImageFileView,OverView,ImageFileList,SpecFileView,SpeFileList,DownLoadFile
 
 urlpatterns = [
     path('yearlist/',GetYearList.as_view()),
@@ -8,5 +8,6 @@ urlpatterns = [
     path('specfile/',SpecFileView.as_view()),
     path('quicklook/',OverView.as_view()),
     path('imgfilelist/',ImageFileList.as_view()),
-     path('spefilelist/',SpeFileList.as_view())
+    path('spefilelist/',SpeFileList.as_view()),
+    path('download/',DownLoadFile.as_view())
 ] 
