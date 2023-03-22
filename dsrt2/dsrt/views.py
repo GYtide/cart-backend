@@ -256,7 +256,6 @@ class DownLoadFile(views.APIView):
             response['Content-Type'] = 'application/octet-stream'
             response['Content-Disposition'] = 'attachment; filename="{}"'.format(zip_filename)
             return response
-            # return Response({'asd':'asd'},status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
             return Response({'error': '无法找到一个或多个文件'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
