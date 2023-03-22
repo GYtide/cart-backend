@@ -244,7 +244,7 @@ class DownLoadFile(views.APIView):
             with io.BytesIO() as zip_buffer:
                 with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
                     for filepath in filepaths:
-                        zip_file.write(filepath)
+                        zip_file.write(filepath,os.path.basename(filepath))
 
             # 创建新的 BytesIO 对象，并将 ZIP 文件内容写入其中
                 zip_data = zip_buffer.getvalue()
@@ -252,9 +252,9 @@ class DownLoadFile(views.APIView):
 
 
             # 将 ZIP 文件作为响应发送给客户端浏览器进行下载
-            response = FileResponse(response_data )
-            response['Content-Type'] = 'application/octet-stream'
-            response['Content-Disposition'] = 'attachment; filename="{}"'.format(zip_filename)
+            response = FileResponse(response_data,as_attachment=True,filename=zip_filename)
+            # response['Content-Disposition'] = 'attachment; filename="{}"'.format(zip_filename)
+            # response['Content-Type'] = 'application/octet-stream'
             return response
         except ObjectDoesNotExist:
             return Response({'error': '无法找到一个或多个文件'}, status=status.HTTP_404_NOT_FOUND)
