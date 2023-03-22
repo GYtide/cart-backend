@@ -6,6 +6,7 @@ from rest_framework import status
 from . import models
 from .serializers import ProjectDataSerializer,SpecViewFileSerialzer,ProjectFileSerializer ,ImageFileSerializer,SpecDataSerializer,SpecDataListSerializer
 from astropy.io import fits
+from django.core.exceptions import ObjectDoesNotExist
 import os
 import io
 import numpy as np
@@ -238,20 +239,28 @@ class DownLoadFile(views.APIView):
             filepaths = [d['file_path'] for d in data_list]
 
             # 将要下载的文件打包成 ZIP 文件
-            zip_filename = 'download.zip'
-            with zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED) as zip_file:
-                for filepath in filepaths:
-                    zip_file.write(filepath)
+            now = datetime.datetime.now()
+            zip_filename = '%s.zip' % now.strftime('%Y-%m-%d %H:%M:%S.%f')
+            with io.BytesIO() as zip_buffer:
+                with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+                    for filepath in filepaths:
+                        zip_file.write(filepath)
+
+            # 创建新的 BytesIO 对象，并将 ZIP 文件内容写入其中
+                zip_data = zip_buffer.getvalue()
+            response_data  = io.BytesIO(zip_data)
+
 
            # 将 ZIP 文件作为响应发送给客户端浏览器进行下载
-            response = FileResponse(open(zip_filename, "rb"))
+            response = FileResponse(response_data )
             response['Content-Type'] = 'application/octet-stream'
             response['Content-Disposition'] = 'attachment; filename="{}"'.format(zip_filename)
-            print(response)
             return response
-            # return Response({'asda':filepaths},status=status.HTTP_200_OK)
-        except:
-            return Response({'not found'},status=status.HTTP_404_NOT_FOUND)
+            # return Response({'asd':'asd'},status=status.HTTP_200_OK)
+        except ObjectDoesNotExist:
+            return Response({'error': '无法找到一个或多个文件'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
