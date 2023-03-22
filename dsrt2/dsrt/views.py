@@ -251,7 +251,7 @@ class DownLoadFile(views.APIView):
             response_data  = io.BytesIO(zip_data)
 
 
-           # 将 ZIP 文件作为响应发送给客户端浏览器进行下载
+            # 将 ZIP 文件作为响应发送给客户端浏览器进行下载
             response = FileResponse(response_data )
             response['Content-Type'] = 'application/octet-stream'
             response['Content-Disposition'] = 'attachment; filename="{}"'.format(zip_filename)
