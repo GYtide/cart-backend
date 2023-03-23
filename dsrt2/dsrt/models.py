@@ -139,6 +139,7 @@ class ProjectData(models.Model):
     file_path = models.CharField(max_length=255, blank=True, null=True)
     date = models.DateField(blank=True, null=True)
     direct = models.CharField(max_length=2, blank=True, null=True)
+    freq = models.FloatField(blank=True, null=True)
 
     class Meta:
         managed = False

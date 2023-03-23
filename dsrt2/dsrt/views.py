@@ -16,6 +16,7 @@ import base64
 from django.db.models import Q
 import datetime
 import zipfile
+from . import utils
 
 # Create your views here.
 
@@ -193,7 +194,7 @@ class SpeFileList(views.APIView):
         except:
             return Response({'asdasd'},status=status.HTTP_404_NOT_FOUND)
 
-class OverView(views.APIView):
+class Quicklook(views.APIView):
     def get(self,request):
 
         try:
@@ -201,21 +202,11 @@ class OverView(views.APIView):
             date = request.GET.get('date')  # 传入日期，查询相应文件
             start_time = request.GET.get('start')
             end_time = request.GET.get('end')
+            print('==============aaaa========',start_time,end_time)
             spequeryset = models.SpecView.objects.filter(date__exact=date)
             proqueryset = models.ProjectData.objects.filter(date__exact=date)
 
-            # 如果都是空返回无数据
-            # if spequeryset.count()==0 and proqueryset.count()==0:
-            #     return Response(['NOT FOUND DATA'],status=status.HTTP_404_NOT_FOUND)
-
-            serializer = SpecViewFileSerialzer(spequeryset)
-
-            with open(r'/home/gytide/dsrtdev/dsrt2/dsrt/output.png','rb') as f:
-                 img_byte = f.read()  # 二进制编码
-                 img_b64 = base64.b64encode(img_byte)  # img_b64是字节类型变量，b64.encode()对字节类型变量进行b64编码，bytes->bytes
-                 img_res = img_b64.decode('utf-8')  # 相当于去掉字符串前面的b'....'
-       
-            return Response([{'res':img_res}],status=status.HTTP_200_OK)
+            return Response([{'res':'asd'}],status=status.HTTP_200_OK)
         
         except:
             return Response([],status=status.HTTP_404_NOT_FOUND)
