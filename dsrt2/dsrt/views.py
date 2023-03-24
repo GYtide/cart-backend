@@ -135,7 +135,7 @@ class ImageFileList(views.APIView):
     def get(self, request):
 
         try:
-
+            
             return Response([{'name': 'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits',
                               'path': '/home/gytide/dsrtprod/data/2023/03/dsrtimg/ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits',
                               'freq': 233.0,
