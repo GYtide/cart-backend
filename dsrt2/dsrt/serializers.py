@@ -32,7 +32,7 @@ class ProjectFileSerializer(serializers.ModelSerializer):
 class ImageFileSerializer(serializers.ModelSerializer):
     class Meta:
         model = ImageData
-        fields = ['file_name', 'file_path', 'date']
+        fields = ['file_name', 'file_path', 'time_begin', 'time_end']
 
 # 对频谱数据文件序列化,得到文件信息
 

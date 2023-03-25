@@ -135,7 +135,7 @@ class ImageFileList(views.APIView):
     def get(self, request):
 
         try:
-            
+
             return Response([{'name': 'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits',
                               'path': '/home/gytide/dsrtprod/data/2023/03/dsrtimg/ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits',
                               'freq': 233.0,
@@ -199,7 +199,7 @@ class Quicklook(views.APIView):
 
             for fig in figimg:
                 probuffer = io.BytesIO()
-                fig.savefig(probuffer,format='png')
+                fig.savefig(probuffer, format='png')
                 probuffer.seek(0)
                 pro_str = base64.b64encode(probuffer.read()).decode()
                 imglist.append(pro_str)
@@ -218,13 +218,24 @@ class DownLoadFile(views.APIView):
         try:
             file_list = request.data['filelist']
             query = Q(file_name__in=file_list)
-            # 查出路径
+            # 查出频谱数据文件的路径
             queryset = models.SpecData.objects.filter(query)
             serializer = SpecDataSerializer(queryset, many=True)
 
             # 将 serializer.data 转换为 JSON 格式的字符串
-            data_list = list(serializer.data)
-            filepaths = [d['file_path'] for d in data_list]
+            spe_list = list(serializer.data)
+            filepaths = [d['file_path'] for d in spe_list]
+
+            # 查出成像数据文件的路径
+            queryset = models.ImageData.objects.filter(query)
+            serializer = ImageFileSerializer(queryset, many=True)
+            print(queryset)
+
+            # 将 serializer.data 转换为 JSON 格式的字符串
+            img_list = list(serializer.data)
+            filepaths += [d['file_path'] for d in img_list]
+
+            print(filepaths)
 
             # 将要下载的文件打包成 ZIP 文件
             now = datetime.now()
