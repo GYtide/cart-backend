@@ -144,6 +144,25 @@ class ImageFileList(views.APIView):
         except:
             return Response([{'asdasd'}], status=status.HTTP_200_OK)
 
+# /data/specfile
+
+
+class SpecFileView(views.APIView):
+    def post(self, request):
+        file_list = request.data['filelist']
+        query = Q(file_name__in=file_list)
+        # 查出频谱数据文件的路径
+        queryset = models.SpecData.objects.filter(query)
+        serializer = SpecDataSerializer(queryset, many=True)
+
+        # 将 serializer.data 转换为 JSON 格式的字符串
+        spe_list = list(serializer.data)
+        file_list = [d['file_path'] for d in spe_list]
+
+        data = utils.spe_merge(file_list)
+        
+        return Response(data, status=status.HTTP_200_OK)
+
 # /data/spefilelist
 
 

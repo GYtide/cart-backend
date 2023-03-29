@@ -16,6 +16,25 @@ import matplotlib.cm as mplcm
 from matplotlib.ticker import MultipleLocator
 import cv2
 
+
+def spe_merge(fitslist):
+
+    timeArray = []
+    speArray = []
+    dataArray = []
+
+    for fitsfile in fitslist:
+        with fits.open(fitsfile) as hdulist:
+            data = hdulist[0].data  # 读取 SPE 文件中的 data 数组
+            time = hdulist[1].data['TIME']  # 读取 SPE 文件中的 time
+            frequency = hdulist[1].data['frequency']  # 读取 SPE 文件中的 frequency
+            timeArray.append(time)
+            speArray.append(frequency)
+            dataArray.append(data)
+
+    return {'xAxis': timeArray, 'yAxis': speArray, 'data': dataArray}
+
+
 # 在 tx 中找出 t1 t2的索引
 
 
@@ -152,7 +171,8 @@ class Rimg1Dsyn():
         ax1.set_ylim([self.yyg[0, 0], self.yyg[-1, 0]])
         # ax.xticks(rotation=70)
         ax1.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
-        ax1.xaxis.set_minor_locator(mdates.MinuteLocator())
+        # ax1.xaxis.set_minor_locator(mdates.MinuteLocator())
+        # ax1.yaxis.set_major_locator(MultipleLocator(5))
         ax1.yaxis.set_minor_locator(MultipleLocator(10))
         ax1in1 = ax1.inset_axes([0.0, 0.0, 1, 1], zorder=1)
         if shading == 'flat':
@@ -247,7 +267,7 @@ class RspecSyn():
         ax1.set_ylim([self.yyg[0, 0], self.yyg[-1, 0]])
         # ax.xticks(rotation=70)
         ax1.xaxis.set_major_formatter(mdates.DateFormatter('%H:%M:%S'))
-        ax1.xaxis.set_minor_locator(mdates.MinuteLocator())
+        # ax1.xaxis.set_minor_locator(mdates.MinuteLocator())
         ax1.yaxis.set_minor_locator(MultipleLocator(10))
         ax1in1 = ax1.inset_axes([0.0, 0.0, 1, 1], zorder=1)
         if shading == 'flat':
