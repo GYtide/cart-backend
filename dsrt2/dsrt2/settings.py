@@ -59,6 +59,14 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'dsrt2.urls'
 
+# REST_FRAMEWORK = {
+#     "DEFAULT_RENDERER_CLASSES": [
+#       'dsrt.renderers.BinaryRenderer'
+#         # ...
+#     ],
+#     # ...
+# }
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
