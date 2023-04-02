@@ -87,9 +87,7 @@ class ImageFileView(views.APIView):
             # 判断request中的 type 属性,如果打开文件并传回hdu文件头信息和第一帧
             reqtype = request.GET.get('type')
             if reqtype == 'openfile': 
-
                 # 打开文件并返回文件头信息
-
                 hdu = fits.open(path)
 
                 data = hdu[1].data[0]
@@ -104,7 +102,6 @@ class ImageFileView(views.APIView):
                     frame.stokesi.extend(row)
                 for row in data[3]:
                     frame.stokesv.extend(row)
-
 
                 message.frame.CopyFrom(frame) 
                 for card in hdu[0].header.cards:
@@ -123,14 +120,26 @@ class ImageFileView(views.APIView):
             elif reqtype == 'appdata':
                 index = int(request.GET.get('index'))
                 hdu = fits.open(path)
-                # print('index',hdu[1].data[index])
+
+                message = frame_pb2.ImgAppAck()
+                frame = frame_pb2.ImgFrame()
                 data = hdu[1].data[index]
 
-                frame = {'time': data[0], 'freq': data[1],
-                         'stokesi': data[2], 'stokesv': data[3], 'sunx': data[4], 'suny': data[5]}
+                frame.time = data[0]
+                frame.freq = data[1]
+                frame.sunx.extend(data[4])
+                frame.suny.extend(data[5])
+                for row in data[2]:
+                    frame.stokesi.extend(row)
+                for row in data[3]:
+                    frame.stokesv.extend(row)
 
+                message.index = index
+                message.frame.CopyFrom(frame)
+                print(message)
                 hdu.close()
-                return Response(frame, status=status.HTTP_200_OK)
+                data=message.SerializeToString()
+                return Response(data, status=status.HTTP_200_OK)
 
             else:
                 return Response(status=status.HTTP_404_NOT_FOUND)
