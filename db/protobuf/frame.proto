@@ -24,3 +24,8 @@ message OpenImgFileAck {
   map<string, string> header1 = 3;
   int32 index = 4;
 }
+
+message ImgAppAck{
+ ImgFrame frame = 1;
+ int32 index = 2;
+}
