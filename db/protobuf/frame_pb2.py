@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x66rame.proto\"O\n\x05\x46rame\x12\x0c\n\x04\x64\x61ta\x18\x01 \x03(\x02\x12\n\n\x02id\x18\x02 \x01(\x05\x12\r\n\x05\x66name\x18\x03 \x01(\t\x12\r\n\x05width\x18\x04 \x01(\x05\x12\x0e\n\x06height\x18\x05 \x01(\x05\"d\n\x08ImgFrame\x12\x0f\n\x07stokesi\x18\x01 \x03(\x02\x12\x0f\n\x07stokesv\x18\x02 \x03(\x02\x12\x0c\n\x04time\x18\x03 \x01(\x05\x12\x0c\n\x04\x66req\x18\x04 \x01(\t\x12\x0c\n\x04sunx\x18\x06 \x03(\x02\x12\x0c\n\x04suny\x18\x07 \x03(\x02\"[\n\x0eOpenImgFileAck\x12\x18\n\x05\x66rame\x18\x01 \x03(\x0b\x32\t.ImgFrame\x12\x0f\n\x07header0\x18\x02 \x01(\t\x12\x0f\n\x07header1\x18\x03 \x01(\t\x12\r\n\x05index\x18\x04 \x01(\x05\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x66rame.proto\"O\n\x05\x46rame\x12\x0c\n\x04\x64\x61ta\x18\x01 \x03(\x02\x12\n\n\x02id\x18\x02 \x01(\x05\x12\r\n\x05\x66name\x18\x03 \x01(\t\x12\r\n\x05width\x18\x04 \x01(\x05\x12\x0e\n\x06height\x18\x05 \x01(\x05\"d\n\x08ImgFrame\x12\x0f\n\x07stokesi\x18\x01 \x03(\x02\x12\x0f\n\x07stokesv\x18\x02 \x03(\x02\x12\x0c\n\x04sunx\x18\x03 \x03(\x02\x12\x0c\n\x04suny\x18\x04 \x03(\x02\x12\x0c\n\x04time\x18\x05 \x01(\x05\x12\x0c\n\x04\x66req\x18\x06 \x01(\x02\"\xf7\x01\n\x0eOpenImgFileAck\x12\x18\n\x05\x66rame\x18\x01 \x01(\x0b\x32\t.ImgFrame\x12-\n\x07header0\x18\x02 \x03(\x0b\x32\x1c.OpenImgFileAck.Header0Entry\x12-\n\x07header1\x18\x03 \x03(\x0b\x32\x1c.OpenImgFileAck.Header1Entry\x12\r\n\x05index\x18\x04 \x01(\x05\x1a.\n\x0cHeader0Entry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a.\n\x0cHeader1Entry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -21,10 +21,18 @@ _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'frame_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
+  _OPENIMGFILEACK_HEADER0ENTRY._options = None
+  _OPENIMGFILEACK_HEADER0ENTRY._serialized_options = b'8\001'
+  _OPENIMGFILEACK_HEADER1ENTRY._options = None
+  _OPENIMGFILEACK_HEADER1ENTRY._serialized_options = b'8\001'
   _globals['_FRAME']._serialized_start=15
   _globals['_FRAME']._serialized_end=94
   _globals['_IMGFRAME']._serialized_start=96
   _globals['_IMGFRAME']._serialized_end=196
-  _globals['_OPENIMGFILEACK']._serialized_start=198
-  _globals['_OPENIMGFILEACK']._serialized_end=289
+  _globals['_OPENIMGFILEACK']._serialized_start=199
+  _globals['_OPENIMGFILEACK']._serialized_end=446
+  _globals['_OPENIMGFILEACK_HEADER0ENTRY']._serialized_start=352
+  _globals['_OPENIMGFILEACK_HEADER0ENTRY']._serialized_end=398
+  _globals['_OPENIMGFILEACK_HEADER1ENTRY']._serialized_start=400
+  _globals['_OPENIMGFILEACK_HEADER1ENTRY']._serialized_end=446
 # @@protoc_insertion_point(module_scope)

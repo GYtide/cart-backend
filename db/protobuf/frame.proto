@@ -11,16 +11,16 @@ message Frame {
 message ImgFrame {
   repeated float stokesi = 1;
   repeated float stokesv = 2;
-  int32 time = 3;
-  string freq = 4;
-  repeated float sunx = 6;
-  repeated float suny = 7;
+  repeated float sunx = 3;
+  repeated float suny = 4;
+  int32 time = 5;
+  float freq = 6;
 }
 
 
 message OpenImgFileAck {
-  repeated ImgFrame frame = 1;
-  string header0 = 2;
-  string header1 = 3;
+  ImgFrame frame = 1;
+  map<string, string> header0 = 2;
+  map<string, string> header1 = 3;
   int32 index = 4;
 }

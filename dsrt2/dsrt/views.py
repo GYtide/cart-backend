@@ -9,6 +9,8 @@ from astropy.io import fits
 from django.core.exceptions import ObjectDoesNotExist
 import os
 import io
+from google.protobuf.internal import encoder, decoder
+from google.protobuf.message import Message
 import numpy as np
 from pathlib import Path
 import json
@@ -85,38 +87,33 @@ class ImageFileView(views.APIView):
             # 判断request中的 type 属性,如果打开文件并传回hdu文件头信息和第一帧
             reqtype = request.GET.get('type')
             if reqtype == 'openfile': 
-                message = frame_pb2.Frame
-                message.id = 12306
-                data = message.SerializeToString()
-                response = Response(data,status=status.HTTP_200_OK)
-                response["Content-Type"] = "application/octet-stream"
-                return response
 
                 # 打开文件并返回文件头信息
 
                 hdu = fits.open(path)
 
                 data = hdu[1].data[0]
-                frame = frame_pb2.ImgFrame
-                message = frame_pb2.OpenImgFileAck
+                frame = frame_pb2.ImgFrame()
+                message = frame_pb2.OpenImgFileAck()
 
                 frame.time = data[0]
                 frame.freq = data[1]
-                message.header0 = hdu[0].header
-                message.header1 = hdu[1].header
-                frame.sunx = data[4]
-                frame.suny = data[5]
-                # frame.stokesi = data[2]
-                # frame.stokesv = data[3]
-                # for row in data[2]:
-                #     print(row)
-                    # frame.stokesi.extend(row)
+                frame.sunx.extend(data[4])
+                frame.suny.extend(data[5])
+                for row in data[2]:
+                    frame.stokesi.extend(row)
+                for row in data[3]:
+                    frame.stokesv.extend(row)
 
-                # for row in data[3]:
-                #     frame.stokesv.extend(row)
-                #  frame = {'time': data[0], 'freq': data[1],
-                #              'stokesi': data[2], 'stokesv': data[3], 'sunx': data[4], 'suny': data[5]}
 
+                message.frame.CopyFrom(frame) 
+                for card in hdu[0].header.cards:
+                    message.header0[str(card[0])] = str(card[1])
+
+                for card in hdu[1].header.cards:
+                    message.header1[str(card[0])] = str(card[1])
+                message.index = 0
+                # message.header1 = hdu[1].header
                 # 传回文件头和 STOKESI 的第一帧
                 hdu.close()
                 data = message.SerializeToString()
@@ -210,7 +207,13 @@ class SpecFileView(views.APIView):
             for row in img:
                 frame.data.extend(row)
 
-            return Response(img,status=status.HTTP_200_OK)
+            data = frame.SerializeToString()
+
+            response = Response(data,status=status.HTTP_200_OK)
+            response["Content-Type"] = "application/octet-stream"
+
+             # 禁用默认渲染器
+            return response
         except:
             return Response('404', status=status.HTTP_404_NOT_FOUND)
 # /data/spefilelist
