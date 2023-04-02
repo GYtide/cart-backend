@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+message ImgFrame {
+  repeated float data = 1;
+  int32 id = 2;
+  string fname = 3;
+  repeated float xarr = 4;
+  repeated float yarr = 5;
+}

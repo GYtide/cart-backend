@@ -19,7 +19,7 @@ import zipfile
 from .renderers import BinaryRenderer
 from . import utils
 
-from proto import frame_pb2
+from proto import frame_pb2  
 
 
 # Create your views here.
@@ -76,42 +76,53 @@ class ImageProjectedView(views.APIView):
 
 
 class ImageFileView(views.APIView):
-
+    renderer_classes = (BinaryRenderer, )
     def get(self, request):
 
         try:
             name = 'ODACH_DSRT02_SRIM_L2_150.9MHz_202303010955.fits'
-            # queryset = models.ImageData.objects.filter(file_name__exact=name)
-            # serializer = ImageFileSerializer(queryset,many=True)
-            # filename = serializer.data[0]['file_name']
-            # path = serializer.data[0]['file_path']
-            # path = os.path.join(path,filename)
-
             path = r'/home/gytide/dsrtprod/data/2023/03/dsrtimg/ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits'
-
             # 判断request中的 type 属性,如果打开文件并传回hdu文件头信息和第一帧
             reqtype = request.GET.get('type')
-            print('reqtype', reqtype)
-
-            if reqtype == 'openfile':
+            if reqtype == 'openfile': 
+                message = frame_pb2.Frame
+                message.id = 12306
+                data = message.SerializeToString()
+                response = Response(data,status=status.HTTP_200_OK)
+                response["Content-Type"] = "application/octet-stream"
+                return response
 
                 # 打开文件并返回文件头信息
 
                 hdu = fits.open(path)
 
                 data = hdu[1].data[0]
+                frame = frame_pb2.ImgFrame
+                message = frame_pb2.OpenImgFileAck
 
-                frame = {'time': data[0], 'freq': data[1],
-                         'stokesi': data[2], 'stokesv': data[3], 'sunx': data[4], 'suny': data[5]}
+                frame.time = data[0]
+                frame.freq = data[1]
+                message.header0 = hdu[0].header
+                message.header1 = hdu[1].header
+                frame.sunx = data[4]
+                frame.suny = data[5]
+                # frame.stokesi = data[2]
+                # frame.stokesv = data[3]
+                # for row in data[2]:
+                #     print(row)
+                    # frame.stokesi.extend(row)
+
+                # for row in data[3]:
+                #     frame.stokesv.extend(row)
+                #  frame = {'time': data[0], 'freq': data[1],
+                #              'stokesi': data[2], 'stokesv': data[3], 'sunx': data[4], 'suny': data[5]}
 
                 # 传回文件头和 STOKESI 的第一帧
-
-                header0 = hdu[0].header
-                header1 = hdu[1].header
-
                 hdu.close()
-
-                return Response([{'header0': header0, 'header1': header1}, {'frame': frame, 'index': 1}], status=status.HTTP_200_OK)
+                data = message.SerializeToString()
+                response = Response(data,status=status.HTTP_200_OK)
+                response["Content-Type"] = "application/octet-stream"
+                return response
             elif reqtype == 'appdata':
                 index = int(request.GET.get('index'))
                 hdu = fits.open(path)
@@ -122,13 +133,14 @@ class ImageFileView(views.APIView):
                          'stokesi': data[2], 'stokesv': data[3], 'sunx': data[4], 'suny': data[5]}
 
                 hdu.close()
-                return Response([{'frame': frame, 'index': index}], status=status.HTTP_200_OK)
+                return Response(frame, status=status.HTTP_200_OK)
 
             else:
-                return Response([{'NOTDATA'}], status=status.HTTP_404_NOT_FOUND)
+                return Response(status=status.HTTP_404_NOT_FOUND)
 
-        except:
-            return Response([], status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print('err:',e)
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
 # /data/imgfilelist ?type= image || spec & start= & end=
 # 获取时间段内的成像数据文件的列表
@@ -156,18 +168,16 @@ class SpecFileView(views.APIView):
             path = r'/home/gytide/dsrtprod/data/2023/03/dsrtspe/ODACH_CART05_SRSP_L1_STP_20220417061006_V01.01.fits'
 
             hdu = fits.open(path)
-            data = hdu[0].data[0]
-
-            img = data
             frame = frame_pb2.Frame()
 
-            frame.height = img.shape[0]
-            frame.width = img.shape[1]
+            frame.height = hdu[0].data[0].shape[0]
+            frame.width = hdu[0].data[0].shape[1]
 
             frame.id = 1
             frame.fname = 'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits'
 
-            for row in img:
+            # frame.data = hdu[0].data[0]
+            for row in  hdu[0].data[0]: 
                 frame.data.extend(row)
 
             data = frame.SerializeToString()
@@ -176,9 +186,9 @@ class SpecFileView(views.APIView):
             response["Content-Type"] = "application/octet-stream"
 
              # 禁用默认渲染器
-            print(response)
             return response
-        except:
+        except Exception as e:
+            print(e)
             return Response('404', status=status.HTTP_404_NOT_FOUND)
      
     def get(self, request):
@@ -197,19 +207,10 @@ class SpecFileView(views.APIView):
 
             frame.id = 1
             frame.fname = 'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits'
-
             for row in img:
                 frame.data.extend(row)
 
-            data = frame.SerializeToString()
-
-            response = Response(data,status=status.HTTP_200_OK)
-            response["Content-Type"] = "application/octet-stream"
-
-             # 禁用默认渲染器
-            response.accepted_renderer = BinaryRenderer()
-            response.accepted_media_type = BinaryRenderer.media_type
-            return response
+            return Response(img,status=status.HTTP_200_OK)
         except:
             return Response('404', status=status.HTTP_404_NOT_FOUND)
 # /data/spefilelist
