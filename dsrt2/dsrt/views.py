@@ -20,6 +20,9 @@ from datetime import datetime
 import zipfile
 from .renderers import BinaryRenderer
 from . import utils
+from .utils import redis_connection_pool
+import redis
+from io import BytesIO
 
 from proto import frame_pb2  
 
@@ -82,13 +85,33 @@ class ImageFileView(views.APIView):
     def get(self, request):
 
         try:
-            name = 'ODACH_DSRT02_SRIM_L2_150.9MHz_202303010955.fits'
+            name = 'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits'
             path = r'/home/gytide/dsrtprod/data/2023/03/dsrtimg/ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits'
             # 判断request中的 type 属性,如果打开文件并传回hdu文件头信息和第一帧
             reqtype = request.GET.get('type')
+            redis_con = redis.Redis(connection_pool=redis_connection_pool)
+            cached_buffer = redis_con.get(name)
             if reqtype == 'openfile': 
-                # 打开文件并返回文件头信息
-                hdu = fits.open(path)
+
+                # 判断有没有redis缓存，如果有则从缓存中取出,否则加入缓存
+                hdu  = None
+                if cached_buffer:
+                    # 将字节串写入到一个新的BytesIO对象
+                    retrieved_buffer = BytesIO(cached_buffer)
+                    # 使用BytesIO对象创建HDUList对象
+                    hdu = fits.open(retrieved_buffer)
+                else:
+                    # 打开文件并返回文件头信息
+                    hdu = fits.open(path)
+                    buffer = BytesIO()
+                    with fits.open(path) as hdul:
+                        hdulist = hdul.copy()
+
+                    # 将HDUList对象写入到BytesIO对象
+                        hdulist.writeto(buffer)
+
+                    # 将BytesIO对象存储到Redis
+                    redis_con.set('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', buffer.getvalue(),ex=30)
 
                 data = hdu[1].data[0]
                 frame = frame_pb2.ImgFrame()
@@ -118,9 +141,26 @@ class ImageFileView(views.APIView):
                 response["Content-Type"] = "application/octet-stream"
                 return response
             elif reqtype == 'appdata':
-                index = int(request.GET.get('index'))
-                hdu = fits.open(path)
+                # 判断有没有redis缓存，如果有则从缓存中取出,否则加入缓存
+                hdu  = None
+                if cached_buffer:
+                    # 将字节串写入到一个新的BytesIO对象
+                    retrieved_buffer = BytesIO(cached_buffer)
+                    # 使用BytesIO对象创建HDUList对象
+                    hdu = fits.open(retrieved_buffer)
+                else:
+                    # 打开文件并返回文件头信息
+                    hdu = fits.open(path)
+                    buffer = BytesIO()
+                    with fits.open(path) as hdul:
+                        hdulist = hdul.copy()
 
+                    # 将HDUList对象写入到BytesIO对象
+                        hdulist.writeto(buffer)
+
+                    # 将BytesIO对象存储到Redis
+                    redis_con.set('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', buffer.getvalue(),ex=30)
+                index = int(request.GET.get('index'))
                 message = frame_pb2.ImgAppAck()
                 frame = frame_pb2.ImgFrame()
                 data = hdu[1].data[index]
@@ -136,7 +176,6 @@ class ImageFileView(views.APIView):
 
                 message.index = index
                 message.frame.CopyFrom(frame)
-                print(message)
                 hdu.close()
                 data=message.SerializeToString()
                 return Response(data, status=status.HTTP_200_OK)

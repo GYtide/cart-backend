@@ -15,6 +15,15 @@ from datetime import timedelta
 import matplotlib.cm as mplcm
 from matplotlib.ticker import MultipleLocator
 import cv2
+import redis
+
+# redis连接池
+redis_connection_pool = redis.ConnectionPool(
+    host='localhost',
+    port=6379,
+    db=0,
+    decode_responses=False
+)
 
 
 def spe_merge(fitslist):
