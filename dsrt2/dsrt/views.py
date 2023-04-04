@@ -92,37 +92,39 @@ class ImageFileView(views.APIView):
             reqtype = request.GET.get('type')
             redis_con = redis.Redis(connection_pool=redis_connection_pool)
             if reqtype == 'openfile':
-                header = redis_con.hget(name,'header')
-                hdudata = redis_con.hget(name,1)
+                header = redis_con.hget(name, 'header')
+                hdudata = redis_con.hget(name, 1)
                 # 判断有没有redis缓存，如果有则从缓存中取出,否则加入缓存
                 if not header:
-                    #如果没有缓存则加入缓存
+                    # 如果没有缓存则加入缓存
                     hdu = fits.open(path)
                     num = 1
                     pipe = redis_con.pipeline()
 
-                    header = [{},{}]
+                    header = [{}, {}]
                     for card in hdu[0].header.cards:
                         header[0][str(card[0])] = str(card[1])
 
                     for card in hdu[1].header.cards:
                         header[1][str(card[0])] = str(card[1])
 
-                    header_str =json.dumps(header)
+                    header_str = json.dumps(header)
 
-                    redis_con.hset('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits','header',header_str)
-                    for data in hdu[1].data :
-                        data_str = str([item.tolist() if isinstance(item, np.ndarray) else item for item in data])
-                        redis_con.hset('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits',num,data_str)
-                        num = num +1
-                    redis_con.expire('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', 180)
+                    redis_con.hset(
+                        'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', 'header', header_str)
+                    for data in hdu[1].data:
+                        data_str = str([item.tolist() if isinstance(
+                            item, np.ndarray) else item for item in data])
+                        redis_con.hset(
+                            'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', num, data_str)
+                        num = num + 1
+                    redis_con.expire(
+                        'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', 180)
                     pipe.execute()
                     hdu.close()
-                    header = redis_con.hget(name,'header')
-                    hdudata = redis_con.hget(name,1)
-                    print(header)
-                    
-                
+                    header = redis_con.hget(name, 'header')
+                    hdudata = redis_con.hget(name, 1)
+
                 # 返回文件头信息
                 header = json.loads(header)
                 hdudata = json.loads(hdudata)
@@ -155,32 +157,36 @@ class ImageFileView(views.APIView):
             elif reqtype == 'appdata':
                 # 判断有没有redis缓存，如果有则从缓存中取出,否则加入缓存
                 index = int(request.GET.get('index'))
-                hdudata = redis_con.hget(name,index)
+                hdudata = redis_con.hget(name, index)
                 if not hdudata:
-                    #如果没有缓存则加入缓存
+                    # 如果没有缓存则加入缓存
                     hdu = fits.open(path)
                     num = 1
                     pipe = redis_con.pipeline()
 
-                    header = [{},{}]
+                    header = [{}, {}]
                     for card in hdu[0].header.cards:
                         header[0][str(card[0])] = str(card[1])
 
                     for card in hdu[1].header.cards:
                         header[1][str(card[0])] = str(card[1])
 
-                    header_str =json.dumps(header)
+                    header_str = json.dumps(header)
 
-                    redis_con.hset('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits','header',header_str)
-                    for data in hdu[1].data :
-                        data_str = str([item.tolist() if isinstance(item, np.ndarray) else item for item in data])
-                        redis_con.hset('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits',num,data_str)
-                        num = num +1
-                    redis_con.expire('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', 180)
+                    redis_con.hset(
+                        'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', 'header', header_str)
+                    for data in hdu[1].data:
+                        data_str = str([item.tolist() if isinstance(
+                            item, np.ndarray) else item for item in data])
+                        redis_con.hset(
+                            'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', num, data_str)
+                        num = num + 1
+                    redis_con.expire(
+                        'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', 180)
                     pipe.execute()
                     hdu.close()
-                    header = redis_con.hget(name,'header')
-                    hdudata = redis_con.hget(name,1)
+                    header = redis_con.hget(name, 'header')
+                    hdudata = redis_con.hget(name, 1)
 
                 hdudata = json.loads(hdudata)
 
