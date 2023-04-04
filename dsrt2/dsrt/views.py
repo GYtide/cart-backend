@@ -115,7 +115,7 @@ class ImageFileView(views.APIView):
                         data_str = str([item.tolist() if isinstance(item, np.ndarray) else item for item in data])
                         redis_con.hset('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits',num,data_str)
                         num = num +1
-                    redis_con.expire('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', 60)
+                    redis_con.expire('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', 180)
                     pipe.execute()
                     hdu.close()
                     header = redis_con.hget(name,'header')
@@ -176,7 +176,7 @@ class ImageFileView(views.APIView):
                         data_str = str([item.tolist() if isinstance(item, np.ndarray) else item for item in data])
                         redis_con.hset('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits',num,data_str)
                         num = num +1
-                    redis_con.expire('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', 60)
+                    redis_con.expire('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', 180)
                     pipe.execute()
                     hdu.close()
                     header = redis_con.hget(name,'header')
