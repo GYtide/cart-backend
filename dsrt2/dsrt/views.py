@@ -24,7 +24,7 @@ from .utils import redis_connection_pool
 import redis
 from io import BytesIO
 
-from proto import frame_pb2  
+from proto import frame_pb2
 
 
 # Create your views here.
@@ -82,6 +82,7 @@ class ImageProjectedView(views.APIView):
 
 class ImageFileView(views.APIView):
     renderer_classes = (BinaryRenderer, )
+
     def get(self, request):
 
         try:
@@ -91,10 +92,10 @@ class ImageFileView(views.APIView):
             reqtype = request.GET.get('type')
             redis_con = redis.Redis(connection_pool=redis_connection_pool)
             cached_buffer = redis_con.get(name)
-            if reqtype == 'openfile': 
+            if reqtype == 'openfile':
 
                 # 判断有没有redis缓存，如果有则从缓存中取出,否则加入缓存
-                hdu  = None
+                hdu = None
                 if cached_buffer:
                     # 将字节串写入到一个新的BytesIO对象
                     retrieved_buffer = BytesIO(cached_buffer)
@@ -111,7 +112,8 @@ class ImageFileView(views.APIView):
                         hdulist.writeto(buffer)
 
                     # 将BytesIO对象存储到Redis
-                    redis_con.set('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', buffer.getvalue(),ex=30)
+                    redis_con.set(
+                        'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', buffer.getvalue(), ex=30)
 
                 data = hdu[1].data[0]
                 frame = frame_pb2.ImgFrame()
@@ -126,7 +128,7 @@ class ImageFileView(views.APIView):
                 for row in data[3]:
                     frame.stokesv.extend(row)
 
-                message.frame.CopyFrom(frame) 
+                message.frame.CopyFrom(frame)
                 for card in hdu[0].header.cards:
                     message.header0[str(card[0])] = str(card[1])
 
@@ -137,12 +139,12 @@ class ImageFileView(views.APIView):
                 # 传回文件头和 STOKESI 的第一帧
                 hdu.close()
                 data = message.SerializeToString()
-                response = Response(data,status=status.HTTP_200_OK)
+                response = Response(data, status=status.HTTP_200_OK)
                 response["Content-Type"] = "application/octet-stream"
                 return response
             elif reqtype == 'appdata':
                 # 判断有没有redis缓存，如果有则从缓存中取出,否则加入缓存
-                hdu  = None
+                hdu = None
                 if cached_buffer:
                     # 将字节串写入到一个新的BytesIO对象
                     retrieved_buffer = BytesIO(cached_buffer)
@@ -159,7 +161,8 @@ class ImageFileView(views.APIView):
                         hdulist.writeto(buffer)
 
                     # 将BytesIO对象存储到Redis
-                    redis_con.set('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', buffer.getvalue(),ex=30)
+                    redis_con.set(
+                        'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', buffer.getvalue(), ex=30)
                 index = int(request.GET.get('index'))
                 message = frame_pb2.ImgAppAck()
                 frame = frame_pb2.ImgFrame()
@@ -177,14 +180,14 @@ class ImageFileView(views.APIView):
                 message.index = index
                 message.frame.CopyFrom(frame)
                 hdu.close()
-                data=message.SerializeToString()
+                data = message.SerializeToString()
                 return Response(data, status=status.HTTP_200_OK)
 
             else:
                 return Response(status=status.HTTP_404_NOT_FOUND)
 
         except Exception as e:
-            print('err:',e)
+            print('err:', e)
             return Response(status=status.HTTP_404_NOT_FOUND)
 
 # /data/imgfilelist ?type= image || spec & start= & end=
@@ -206,8 +209,11 @@ class ImageFileList(views.APIView):
             return Response([{'asdasd'}], status=status.HTTP_200_OK)
 
 # /data/specfile
+
+
 class SpecFileView(views.APIView):
     renderer_classes = (BinaryRenderer, )
+
     def post(self, request):
         try:
             path = r'/home/gytide/dsrtprod/data/2023/03/dsrtspe/ODACH_CART05_SRSP_L1_STP_20220417061006_V01.01.fits'
@@ -222,20 +228,20 @@ class SpecFileView(views.APIView):
             frame.fname = 'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits'
 
             # frame.data = hdu[0].data[0]
-            for row in  hdu[0].data[0]: 
+            for row in hdu[0].data[0]:
                 frame.data.extend(row)
 
             data = frame.SerializeToString()
 
-            response = Response(data,status=status.HTTP_200_OK)
+            response = Response(data, status=status.HTTP_200_OK)
             response["Content-Type"] = "application/octet-stream"
 
-             # 禁用默认渲染器
+            # 禁用默认渲染器
             return response
         except Exception as e:
             print(e)
             return Response('404', status=status.HTTP_404_NOT_FOUND)
-     
+
     def get(self, request):
 
         try:
@@ -257,10 +263,10 @@ class SpecFileView(views.APIView):
 
             data = frame.SerializeToString()
 
-            response = Response(data,status=status.HTTP_200_OK)
+            response = Response(data, status=status.HTTP_200_OK)
             response["Content-Type"] = "application/octet-stream"
 
-             # 禁用默认渲染器
+            # 禁用默认渲染器
             return response
         except:
             return Response('404', status=status.HTTP_404_NOT_FOUND)
