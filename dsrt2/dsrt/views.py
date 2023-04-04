@@ -91,97 +91,115 @@ class ImageFileView(views.APIView):
             # 判断request中的 type 属性,如果打开文件并传回hdu文件头信息和第一帧
             reqtype = request.GET.get('type')
             redis_con = redis.Redis(connection_pool=redis_connection_pool)
-            cached_buffer = redis_con.get(name)
             if reqtype == 'openfile':
-
+                header = redis_con.hget(name,'header')
+                hdudata = redis_con.hget(name,1)
                 # 判断有没有redis缓存，如果有则从缓存中取出,否则加入缓存
-                hdu = None
-                if cached_buffer:
-                    # 将字节串写入到一个新的BytesIO对象
-                    retrieved_buffer = BytesIO(cached_buffer)
-                    # 使用BytesIO对象创建HDUList对象
-                    hdu = fits.open(retrieved_buffer)
-                else:
-                    # 打开文件并返回文件头信息
+                if not header:
+                    #如果没有缓存则加入缓存
                     hdu = fits.open(path)
-                    buffer = BytesIO()
-                    with fits.open(path) as hdul:
-                        hdulist = hdul.copy()
+                    num = 1
+                    pipe = redis_con.pipeline()
 
-                    # 将HDUList对象写入到BytesIO对象
-                        hdulist.writeto(buffer)
+                    header = [{},{}]
+                    for card in hdu[0].header.cards:
+                        header[0][str(card[0])] = str(card[1])
 
-                    # 将BytesIO对象存储到Redis
-                    redis_con.set(
-                        'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', buffer.getvalue(), ex=30)
+                    for card in hdu[1].header.cards:
+                        header[1][str(card[0])] = str(card[1])
 
-                data = hdu[1].data[0]
+                    header_str =json.dumps(header)
+
+                    redis_con.hset('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits','header',header_str)
+                    for data in hdu[1].data :
+                        data_str = str([item.tolist() if isinstance(item, np.ndarray) else item for item in data])
+                        redis_con.hset('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits',num,data_str)
+                        num = num +1
+                    redis_con.expire('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', 60)
+                    pipe.execute()
+                    hdu.close()
+                    header = redis_con.hget(name,'header')
+                    hdudata = redis_con.hget(name,1)
+                    print(header)
+                    
+                
+                # 返回文件头信息
+                header = json.loads(header)
+                hdudata = json.loads(hdudata)
                 frame = frame_pb2.ImgFrame()
                 message = frame_pb2.OpenImgFileAck()
 
-                frame.time = data[0]
-                frame.freq = data[1]
-                frame.sunx.extend(data[4])
-                frame.suny.extend(data[5])
-                for row in data[2]:
+                frame.time = hdudata[0]
+                frame.freq = hdudata[1]
+                frame.sunx.extend(hdudata[4])
+                frame.suny.extend(hdudata[5])
+                for row in hdudata[2]:
                     frame.stokesi.extend(row)
-                for row in data[3]:
+                for row in hdudata[3]:
                     frame.stokesv.extend(row)
 
                 message.frame.CopyFrom(frame)
-                for card in hdu[0].header.cards:
-                    message.header0[str(card[0])] = str(card[1])
+                for card in header[0]:
+                    message.header0[card] = header[0][card]
 
-                for card in hdu[1].header.cards:
-                    message.header1[str(card[0])] = str(card[1])
+                for card in header[1]:
+                    message.header1[card] = header[1][card]
                 message.index = 0
                 # message.header1 = hdu[1].header
                 # 传回文件头和 STOKESI 的第一帧
-                hdu.close()
-                data = message.SerializeToString()
-                response = Response(data, status=status.HTTP_200_OK)
+
+                respdata = message.SerializeToString()
+                response = Response(respdata, status=status.HTTP_200_OK)
                 response["Content-Type"] = "application/octet-stream"
                 return response
             elif reqtype == 'appdata':
                 # 判断有没有redis缓存，如果有则从缓存中取出,否则加入缓存
-                hdu = None
-                if cached_buffer:
-                    # 将字节串写入到一个新的BytesIO对象
-                    retrieved_buffer = BytesIO(cached_buffer)
-                    # 使用BytesIO对象创建HDUList对象
-                    hdu = fits.open(retrieved_buffer)
-                else:
-                    # 打开文件并返回文件头信息
-                    hdu = fits.open(path)
-                    buffer = BytesIO()
-                    with fits.open(path) as hdul:
-                        hdulist = hdul.copy()
-
-                    # 将HDUList对象写入到BytesIO对象
-                        hdulist.writeto(buffer)
-
-                    # 将BytesIO对象存储到Redis
-                    redis_con.set(
-                        'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', buffer.getvalue(), ex=30)
                 index = int(request.GET.get('index'))
+                hdudata = redis_con.hget(name,index)
+                if not hdudata:
+                    #如果没有缓存则加入缓存
+                    hdu = fits.open(path)
+                    num = 1
+                    pipe = redis_con.pipeline()
+
+                    header = [{},{}]
+                    for card in hdu[0].header.cards:
+                        header[0][str(card[0])] = str(card[1])
+
+                    for card in hdu[1].header.cards:
+                        header[1][str(card[0])] = str(card[1])
+
+                    header_str =json.dumps(header)
+
+                    redis_con.hset('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits','header',header_str)
+                    for data in hdu[1].data :
+                        data_str = str([item.tolist() if isinstance(item, np.ndarray) else item for item in data])
+                        redis_con.hset('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits',num,data_str)
+                        num = num +1
+                    redis_con.expire('ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', 60)
+                    pipe.execute()
+                    hdu.close()
+                    header = redis_con.hget(name,'header')
+                    hdudata = redis_con.hget(name,1)
+
+                hdudata = json.loads(hdudata)
+
                 message = frame_pb2.ImgAppAck()
                 frame = frame_pb2.ImgFrame()
-                data = hdu[1].data[index]
 
-                frame.time = data[0]
-                frame.freq = data[1]
-                frame.sunx.extend(data[4])
-                frame.suny.extend(data[5])
-                for row in data[2]:
+                frame.time = hdudata[0]
+                frame.freq = hdudata[1]
+                frame.sunx.extend(hdudata[4])
+                frame.suny.extend(hdudata[5])
+                for row in hdudata[2]:
                     frame.stokesi.extend(row)
-                for row in data[3]:
+                for row in hdudata[3]:
                     frame.stokesv.extend(row)
 
                 message.index = index
                 message.frame.CopyFrom(frame)
-                hdu.close()
-                data = message.SerializeToString()
-                return Response(data, status=status.HTTP_200_OK)
+                respdata = message.SerializeToString()
+                return Response(respdata, status=status.HTTP_200_OK)
 
             else:
                 return Response(status=status.HTTP_404_NOT_FOUND)
