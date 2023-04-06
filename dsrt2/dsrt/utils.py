@@ -16,6 +16,9 @@ import matplotlib.cm as mplcm
 from matplotlib.ticker import MultipleLocator
 import cv2
 import redis
+import json
+import numpy as np
+from proto import frame_pb2
 
 # redis连接池
 redis_connection_pool = redis.ConnectionPool(
@@ -344,3 +347,71 @@ def genQuicklook(fnspec, file1, *fnimg, start_times='2022-01-01T00:00:00', end_t
             rimg2.getdatat(t1, t2)
             figimg.append(rimg2.plot_img1D(figsize=(10, 2)))
     return figspec, figimg
+
+
+def FlowCal(fileList,area):
+    redis_con = redis.Redis(connection_pool=redis_connection_pool)
+    
+    try:
+        for file in fileList :
+            hdu = redis_con.hgetall(file)
+            if not hdu:
+                # 没有缓存，打开文件加入缓存
+                # 暂时默认一个文件
+                path = r'/home/gytide/dsrtprod/data/2023/03/dsrtimg/ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits'
+                nhdu = fits.open(path)
+                num = 1
+                pipe = redis_con.pipeline()
+                header = [{}, {}]
+                for card in nhdu[0].header.cards:
+                    header[0][str(card[0])] = str(card[1])
+
+                for card in nhdu[1].header.cards:
+                    header[1][str(card[0])] = str(card[1])
+
+                header_str = json.dumps(header)
+
+                redis_con.hset(
+                    'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', 'header', header_str)
+                for data in nhdu[1].data:
+                    data_str = str([item.tolist() if isinstance(
+                        item, np.ndarray) else item for item in data])
+                    redis_con.hset(
+                        'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', num, data_str)
+                    num = num + 1
+                redis_con.expire(
+                    'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits', 180)
+                pipe.execute()
+                nhdu.close()
+                hdu = redis_con.hgetall(file)
+            hdu_data = sorted(hdu.items())
+            
+            message = frame_pb2.FlowCalAck()
+            for btablestr in hdu_data[0:-1]:
+                btable = json.loads(btablestr[1])
+                time = btable[0]
+                stokesi = np.array(btable[2])
+                stokesv = np.array(btable[3])
+                sunx = np.array(btable[4])
+                suny = np.array(btable[5])
+                sunxindex = np.where((sunx >= area[0][0]) & (sunx <= area[0][1]))[0]
+                sunyindex = np.where((suny >= area[1][0]) & (suny <= area[1][1]))[0]
+                sun_stokesi = stokesi[np.ix_( sunyindex,sunxindex)]
+                sun_stokesv = stokesv[np.ix_( sunyindex,sunxindex)]
+                stokesi_sum = np.sum(sun_stokesi)
+                stokesv_sum = np.sum(sun_stokesv)
+                message.stokesi[time] = stokesi_sum
+                message.stokesv[time] = stokesv_sum
+            return message
+    except Exception as e:
+        print(e)
+
+            
+        
+        
+        
+
+
+
+
+

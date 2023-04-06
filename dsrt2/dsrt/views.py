@@ -20,7 +20,7 @@ from datetime import datetime
 import zipfile
 from .renderers import BinaryRenderer
 from . import utils
-from .utils import redis_connection_pool
+from .utils import redis_connection_pool, FlowCal
 import redis
 from io import BytesIO
 
@@ -402,6 +402,23 @@ class DownLoadFile(views.APIView):
             response = FileResponse(
                 response_data, as_attachment=True, filename=zip_filename)
             return response
+        except ObjectDoesNotExist:
+            return Response({'error': '无法找到一个或多个文件'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+# /data/flowalculation
+class Flowalculation(views.APIView):
+    renderer_classes = (BinaryRenderer, )
+
+    def post(self, request):
+        try:
+            file_list = request.data['filelist']
+            area = request.data['area']
+            message = FlowCal(file_list, area)
+            respdata = message.SerializeToString()
+            return Response(respdata, status=status.HTTP_200_OK)
         except ObjectDoesNotExist:
             return Response({'error': '无法找到一个或多个文件'}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:

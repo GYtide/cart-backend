@@ -13,7 +13,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x66rame.proto\"O\n\x05\x46rame\x12\x0c\n\x04\x64\x61ta\x18\x01 \x03(\x02\x12\n\n\x02id\x18\x02 \x01(\x05\x12\r\n\x05\x66name\x18\x03 \x01(\t\x12\r\n\x05width\x18\x04 \x01(\x05\x12\x0e\n\x06height\x18\x05 \x01(\x05\"d\n\x08ImgFrame\x12\x0f\n\x07stokesi\x18\x01 \x03(\x02\x12\x0f\n\x07stokesv\x18\x02 \x03(\x02\x12\x0c\n\x04sunx\x18\x03 \x03(\x02\x12\x0c\n\x04suny\x18\x04 \x03(\x02\x12\x0c\n\x04time\x18\x05 \x01(\x05\x12\x0c\n\x04\x66req\x18\x06 \x01(\x02\"\xf7\x01\n\x0eOpenImgFileAck\x12\x18\n\x05\x66rame\x18\x01 \x01(\x0b\x32\t.ImgFrame\x12-\n\x07header0\x18\x02 \x03(\x0b\x32\x1c.OpenImgFileAck.Header0Entry\x12-\n\x07header1\x18\x03 \x03(\x0b\x32\x1c.OpenImgFileAck.Header1Entry\x12\r\n\x05index\x18\x04 \x01(\x05\x1a.\n\x0cHeader0Entry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a.\n\x0cHeader1Entry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"4\n\tImgAppAck\x12\x18\n\x05\x66rame\x18\x01 \x01(\x0b\x32\t.ImgFrame\x12\r\n\x05index\x18\x02 \x01(\x05\x62\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0b\x66rame.proto\"O\n\x05\x46rame\x12\x0c\n\x04\x64\x61ta\x18\x01 \x03(\x02\x12\n\n\x02id\x18\x02 \x01(\x05\x12\r\n\x05\x66name\x18\x03 \x01(\t\x12\r\n\x05width\x18\x04 \x01(\x05\x12\x0e\n\x06height\x18\x05 \x01(\x05\"d\n\x08ImgFrame\x12\x0f\n\x07stokesi\x18\x01 \x03(\x02\x12\x0f\n\x07stokesv\x18\x02 \x03(\x02\x12\x0c\n\x04sunx\x18\x03 \x03(\x02\x12\x0c\n\x04suny\x18\x04 \x03(\x02\x12\x0c\n\x04time\x18\x05 \x01(\x05\x12\x0c\n\x04\x66req\x18\x06 \x01(\x02\"\xf7\x01\n\x0eOpenImgFileAck\x12\x18\n\x05\x66rame\x18\x01 \x01(\x0b\x32\t.ImgFrame\x12-\n\x07header0\x18\x02 \x03(\x0b\x32\x1c.OpenImgFileAck.Header0Entry\x12-\n\x07header1\x18\x03 \x03(\x0b\x32\x1c.OpenImgFileAck.Header1Entry\x12\r\n\x05index\x18\x04 \x01(\x05\x1a.\n\x0cHeader0Entry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1a.\n\x0cHeader1Entry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"4\n\tImgAppAck\x12\x18\n\x05\x66rame\x18\x01 \x01(\x0b\x32\t.ImgFrame\x12\r\n\x05index\x18\x02 \x01(\x05\"\xc2\x01\n\nFlowCalAck\x12)\n\x07stokesi\x18\x01 \x03(\x0b\x32\x18.FlowCalAck.StokesiEntry\x12)\n\x07stokesv\x18\x02 \x03(\x0b\x32\x18.FlowCalAck.StokesvEntry\x1a.\n\x0cStokesiEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x01:\x02\x38\x01\x1a.\n\x0cStokesvEntry\x12\x0b\n\x03key\x18\x01 \x01(\x05\x12\r\n\x05value\x18\x02 \x01(\x01:\x02\x38\x01\x62\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -25,6 +25,10 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _OPENIMGFILEACK_HEADER0ENTRY._serialized_options = b'8\001'
   _OPENIMGFILEACK_HEADER1ENTRY._options = None
   _OPENIMGFILEACK_HEADER1ENTRY._serialized_options = b'8\001'
+  _FLOWCALACK_STOKESIENTRY._options = None
+  _FLOWCALACK_STOKESIENTRY._serialized_options = b'8\001'
+  _FLOWCALACK_STOKESVENTRY._options = None
+  _FLOWCALACK_STOKESVENTRY._serialized_options = b'8\001'
   _globals['_FRAME']._serialized_start=15
   _globals['_FRAME']._serialized_end=94
   _globals['_IMGFRAME']._serialized_start=96
@@ -37,4 +41,10 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _globals['_OPENIMGFILEACK_HEADER1ENTRY']._serialized_end=446
   _globals['_IMGAPPACK']._serialized_start=448
   _globals['_IMGAPPACK']._serialized_end=500
+  _globals['_FLOWCALACK']._serialized_start=503
+  _globals['_FLOWCALACK']._serialized_end=697
+  _globals['_FLOWCALACK_STOKESIENTRY']._serialized_start=603
+  _globals['_FLOWCALACK_STOKESIENTRY']._serialized_end=649
+  _globals['_FLOWCALACK_STOKESVENTRY']._serialized_start=651
+  _globals['_FLOWCALACK_STOKESVENTRY']._serialized_end=697
 # @@protoc_insertion_point(module_scope)

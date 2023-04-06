@@ -29,3 +29,8 @@ message ImgAppAck{
  ImgFrame frame = 1;
  int32 index = 2;
 }
+
+message FlowCalAck {
+ map<int32, double> stokesi = 1;
+ map<int32, double> stokesv = 2;
+}
