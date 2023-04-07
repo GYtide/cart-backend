@@ -29,22 +29,54 @@ redis_connection_pool = redis.ConnectionPool(
 )
 
 
+def compress_matrix(timearr,spearr,matrix, max_elements):
+    """
+    对给定的矩阵进行间隔采样，使其元素数量不超过指定的最大值。
+    
+    参数：
+    matrix -- 要进行采样的矩阵
+    max_elements -- 最大的元素数量
+    
+    返回值：
+    采样后的矩阵
+    """
+    # 获取矩阵的形状和元素数量
+    lay,rows, cols = matrix.shape
+    num_elements = rows * cols
+    
+    # 计算采样间隔
+    interval = int(np.ceil(np.sqrt(num_elements / max_elements)))
+    
+    # 采样矩阵
+    compressed_matrix = matrix[:,::interval, ::interval]
+    timearr = timearr[::interval]
+    spearr = spearr[::interval]
+    
+    return [timearr,spearr,compressed_matrix]
+
 def spe_merge(fitslist):
 
-    timeArray = []
-    speArray = []
-    dataArray = []
+    timeArray = np.array([])
+    speArray = np.array([])
+    dataArray = np.zeros((0,0,0))
 
     for fitsfile in fitslist:
         with fits.open(fitsfile) as hdulist:
             data = hdulist[0].data  # 读取 SPE 文件中的 data 数组
-            time = hdulist[1].data['TIME']  # 读取 SPE 文件中的 time
-            frequency = hdulist[1].data['frequency']  # 读取 SPE 文件中的 frequency
-            timeArray.append(time)
-            speArray.append(frequency)
-            dataArray.append(data)
+            time = hdulist[1].data['TIME'][0]  # 读取 SPE 文件中的 time
+            frequency = hdulist[1].data['frequency'][0]  # 读取 SPE 文件中的 frequency
 
-    return {'xAxis': timeArray, 'yAxis': speArray, 'data': dataArray}
+            timeArray = np.concatenate((timeArray, time))
+        
+            if speArray.size == 0:  
+                speArray = np.concatenate((speArray, frequency))
+            if dataArray.size == 0:
+                dataArray = data
+            else:
+                dataArray = np.concatenate((dataArray,data),axis=2)
+                
+
+    return compress_matrix(timeArray,frequency,dataArray,400000)
 
 
 # 在 tx 中找出 t1 t2的索引
@@ -349,11 +381,11 @@ def genQuicklook(fnspec, file1, *fnimg, start_times='2022-01-01T00:00:00', end_t
     return figspec, figimg
 
 
-def FlowCal(fileList,area):
+def FlowCal(fileList, area):
     redis_con = redis.Redis(connection_pool=redis_connection_pool)
-    
+
     try:
-        for file in fileList :
+        for file in fileList:
             hdu = redis_con.hgetall(file)
             if not hdu:
                 # 没有缓存，打开文件加入缓存
@@ -385,7 +417,7 @@ def FlowCal(fileList,area):
                 nhdu.close()
                 hdu = redis_con.hgetall(file)
             hdu_data = sorted(hdu.items())
-            
+
             message = frame_pb2.FlowCalAck()
             for btablestr in hdu_data[0:-1]:
                 btable = json.loads(btablestr[1])
@@ -394,10 +426,12 @@ def FlowCal(fileList,area):
                 stokesv = np.array(btable[3])
                 sunx = np.array(btable[4])
                 suny = np.array(btable[5])
-                sunxindex = np.where((sunx >= area[0][0]) & (sunx <= area[0][1]))[0]
-                sunyindex = np.where((suny >= area[1][0]) & (suny <= area[1][1]))[0]
-                sun_stokesi = stokesi[np.ix_( sunyindex,sunxindex)]
-                sun_stokesv = stokesv[np.ix_( sunyindex,sunxindex)]
+                sunxindex = np.where(
+                    (sunx >= area[0][0]) & (sunx <= area[0][1]))[0]
+                sunyindex = np.where(
+                    (suny >= area[1][0]) & (suny <= area[1][1]))[0]
+                sun_stokesi = stokesi[np.ix_(sunyindex, sunxindex)]
+                sun_stokesv = stokesv[np.ix_(sunyindex, sunxindex)]
                 stokesi_sum = np.sum(sun_stokesi)
                 stokesv_sum = np.sum(sun_stokesv)
                 message.stokesi[time] = stokesi_sum
@@ -405,13 +439,3 @@ def FlowCal(fileList,area):
             return message
     except Exception as e:
         print(e)
-
-            
-        
-        
-        
-
-
-
-
-

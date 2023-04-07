@@ -20,7 +20,7 @@ from datetime import datetime
 import zipfile
 from .renderers import BinaryRenderer
 from . import utils
-from .utils import redis_connection_pool, FlowCal
+from .utils import redis_connection_pool, FlowCal,spe_merge
 import redis
 from io import BytesIO
 
@@ -240,28 +240,26 @@ class SpecFileView(views.APIView):
 
     def post(self, request):
         try:
-            path = r'/home/gytide/dsrtprod/data/2023/03/dsrtspe/ODACH_CART05_SRSP_L1_STP_20220417061006_V01.01.fits'
+            file_list = request.data['filelist']
+            query = Q(file_name__in=file_list)
+            # 查出频谱数据文件的路径
+            queryset = models.SpecData.objects.filter(query)
+            serializer = SpecDataSerializer(queryset, many=True)
 
-            hdu = fits.open(path)
-            frame = frame_pb2.Frame()
-
-            frame.height = hdu[0].data[0].shape[0]
-            frame.width = hdu[0].data[0].shape[1]
-
-            frame.id = 1
-            frame.fname = 'ODACH_CART02_SRIM_L2_233MHz_20220417032600_V01.10.fits'
-
-            # frame.data = hdu[0].data[0]
-            for row in hdu[0].data[0]:
-                frame.data.extend(row)
-
-            data = frame.SerializeToString()
-
-            response = Response(data, status=status.HTTP_200_OK)
-            response["Content-Type"] = "application/octet-stream"
-
-            # 禁用默认渲染器
-            return response
+            # 将 serializer.data 转换为 JSON 格式的字符串
+            spe_list = list(serializer.data)
+            filepaths = [d['file_path'] for d in spe_list]
+            timeArray, speArray, dataArray = spe_merge(filepaths)
+            frame = frame_pb2.SpeFrame()
+            frame.time.extend(timeArray)
+            frame.freq.extend(speArray)
+            for row in dataArray[0]:
+                frame.stokesi.extend(row)
+            for row in dataArray[1]:
+                frame.stokesv.extend(row)
+            
+            message = frame.SerializeToString()
+            return Response(message,status=status.HTTP_200_OK)
         except Exception as e:
             print(e)
             return Response('404', status=status.HTTP_404_NOT_FOUND)
